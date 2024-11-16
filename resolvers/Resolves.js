@@ -1,97 +1,78 @@
 import Flight from "../models/Flight.js";
 import Airline from "../models/Airline.js";
+import Airport from "../models/Airport.js";
 
 const resolvers = {
-  Query: {
-      // Obtener todos los vuelos
-      flights: async () => await Flight.find(),
-      
-      // Obtener todas las aerolíneas
-      airlines: async () => await Airline.find(),
-      
-      // Buscar un vuelo por ID
-      findFlightById: async (parent, args) => await Flight.findById(args.id),
-      
-      // Buscar una aerolínea por código IATA
-      findAirlineByIATA: async (parent, args) => await Airline.findOne({ IATA: args.IATA }),
+    Query: {
+        flights: async () => await Flight.find(),
+        airlines: async () => await Airline.find(),
+        findFlightById: async (parent, args) => await Flight.findById(args.id),
+        findAirlineByIATA: async (parent, args) => await Airline.findOne({ IATA: args.IATA }),
+        findFlightsByAirline: async (parent, args) => await Flight.find({ airline: args.airlineId }),
+        findFlightsBetweenAirports: async (parent, args) => {
+            return await Flight.find({
+                departureAirport: args.departureAirportId,
+                arrivalAirport: args.arrivalAirportId
+            });
+        },
+    },
 
-      // Buscar vuelos por aerolínea
-      findFlightsByAirline: async (parent, args) => await Flight.find({ airline: args.airlineId }),
+    Mutation: {
+        createFlight: async (parent, { input }) => {
+            const { airline, departureAirport, arrivalAirport, ...flightData } = input;
 
-      // Buscar vuelos entre dos aeropuertos
-      findFlightsBetweenAirports: async (parent, args) => {
-          return await Flight.find({
-              departureAirport: args.departureAirportId,
-              arrivalAirport: args.arrivalAirportId
-          });
-      },
-  },
+            const existingAirline = await Airline.findById(airline);
+            if (!existingAirline) {
+                throw new Error("Airline not found");
+            }
 
-  Mutation: {
-      // Crear un nuevo vuelo
-      createFlight: async (parent, { input }) => {
-        const { airline, departureAirport, arrivalAirport, ...flightData } = input;
-      
-        // Validar si la aerolínea existe
-        const existingAirline = await Airline.findById(airline);
-        if (!existingAirline) {
-          throw new Error("Airline not found");
-        }
-      
-        // Validar si el aeropuerto de salida existe
-        const departure = await Airport.findById(departureAirport);
-        if (!departure) {
-          throw new Error("Departure airport not found");
-        }
-      
-        // Validar si el aeropuerto de llegada existe
-        const arrival = await Airport.findById(arrivalAirport);
-        if (!arrival) {
-          throw new Error("Arrival airport not found");
-        }
-      
-        // Validar que el aeropuerto de salida y llegada no sean iguales
-        if (departureAirport === arrivalAirport) {
-          throw new Error("Departure and arrival airports must be different");
-        }
-      
-        // Crear el vuelo
-        const newFlight = new Flight({
-          ...flightData,
-          airline,
-          departureAirport,
-          arrivalAirport,
-        });
-      
-        return await newFlight.save();
-      },
-          
-      // Crear una nueva aerolínea
-      createAirline: async (parent, { input }) => {
-          const newAirline = new Airline(input);
-          return await newAirline.save();
-      },
+            const departure = await Airport.findById(departureAirport);
+            if (!departure) {
+                throw new Error("Departure airport not found");
+            }
 
-      // Actualizar y eliminar vuelos
-      updateFlight: async (parent, { id, input }) => {
-          return await Flight.findByIdAndUpdate(id, input, { new: true });
-      },
-      deleteFlight: async (parent, { id }) => {
-          const flight = await Flight.findByIdAndDelete(id);
-          if (!flight) throw new Error('Flight not found');
-          return flight;
-      },
+            const arrival = await Airport.findById(arrivalAirport);
+            if (!arrival) {
+                throw new Error("Arrival airport not found");
+            }
 
-      // Actualizar y eliminar aerolíneas
-      updateAirline: async (parent, { id, input }) => {
-          return await Airline.findByIdAndUpdate(id, input, { new: true });
-      },
-      deleteAirline: async (parent, { id }) => {
-          const airline = await Airline.findByIdAndDelete(id);
-          if (!airline) throw new Error('Airline not found');
-          return airline;
-      },
-  },
+            if (departureAirport === arrivalAirport) {
+                throw new Error("Departure and arrival airports must be different");
+            }
+
+            const newFlight = new Flight({
+                ...flightData,
+                airline,
+                departureAirport,
+                arrivalAirport,
+            });
+
+            return await newFlight.save();
+        },
+
+        createAirline: async (parent, { input }) => {
+            const newAirline = new Airline(input);
+            return await newAirline.save();
+        },
+
+        updateFlight: async (parent, { id, input }) => {
+            return await Flight.findByIdAndUpdate(id, input, { new: true });
+        },
+        deleteFlight: async (parent, { id }) => {
+            const flight = await Flight.findByIdAndDelete(id);
+            if (!flight) throw new Error('Flight not found');
+            return flight;
+        },
+
+        updateAirline: async (parent, { id, input }) => {
+            return await Airline.findByIdAndUpdate(id, input, { new: true });
+        },
+        deleteAirline: async (parent, { id }) => {
+            const airline = await Airline.findByIdAndDelete(id);
+            if (!airline) throw new Error('Airline not found');
+            return airline;
+        },
+    },
 };
 
 export default resolvers;
