@@ -3,7 +3,7 @@ import { startStandaloneServer } from '@apollo/server/standalone';
 import { ApolloServer } from '@apollo/server';
 import conectarDB from './config/database.js';
 import typeDefs from './schema/typeDefs.js';
-import resolvers from './resolvers/libroResolver.js';
+import resolvers from './resolvers/Resolves.js';
 
 // Conectar a MongoDB
 conectarDB();
