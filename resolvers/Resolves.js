@@ -1,11 +1,15 @@
 import Flight from "../models/Flight.js";
 import Airline from "../models/Airline.js";
+import Airport from "../models/Airport.js";
 
 const resolvers = {
   Query: {
       // Obtener todos los vuelos
-      flights: async () => await Flight.find(),
+      flights: async () => { const flights = await Flight.find(); return flights.map(flight => ({ ...flight.toObject(), departureTime: flight.departureTime.toISOString(), arrivalTime: flight.arrivalTime.toISOString() })); },
       
+      airports: async () => await Airport.find(),
+      findAirportByCode: async (parent, args) => await Airport.findOne({ code: args.code }),
+
       // Obtener todas las aerolíneas
       airlines: async () => await Airline.find(),
       
@@ -91,6 +95,20 @@ const resolvers = {
           if (!airline) throw new Error('Airline not found');
           return airline;
       },
+
+       // Adicionar aeropuerto
+       createAirport: async (parent, { input }) => {
+        const newAirport = new Airport(input);
+        return await newAirport.save();
+    },
+    updateAirport: async (parent, { id, input }) => {
+        return await Airport.findByIdAndUpdate(id, input, { new: true });
+    },
+    deleteAirport: async (parent, { id }) => {
+        const airport = await Airport.findByIdAndDelete(id);
+        if (!airport) throw new Error('Airport not found');
+        return airport;
+    },
   },
 };
 

@@ -10,6 +10,14 @@ const typeDefs = `#graphql
         status: String!
     }
 
+    type Airport {
+        id: ID!
+        name: String!
+        city: String!
+        country: String!
+        code: String!
+    }
+
     type Airline {
         id: ID!
         name: String!
@@ -37,6 +45,13 @@ const typeDefs = `#graphql
         callsign: String!
     }
 
+    input AirportInput {
+        name: String!
+        city: String!
+        country: String!
+        code: String!
+    }
+
     type Query {
         flights: [Flight!]!
         airlines: [Airline!]!
@@ -44,6 +59,9 @@ const typeDefs = `#graphql
         findAirlineByIATA(IATA: String!): Airline
         findFlightsByAirline(airlineId: ID!): [Flight!]!
         findFlightsBetweenAirports(departureAirportId: ID!, arrivalAirportId: ID!): [Flight!]!
+
+        airports: [Airport!]!
+        findAirportByCode(code: String!): Airport
     }
 
     type Mutation {
@@ -53,6 +71,10 @@ const typeDefs = `#graphql
         deleteFlight(id: ID!): Flight
         updateAirline(id: ID!, input: AirlineInput!): Airline
         deleteAirline(id: ID!): Airline
+
+        createAirport(input: AirportInput!): Airport
+        updateAirport(id: ID!, input: AirportInput!): Airport
+        deleteAirport(id: ID!): Airport
     }
 `;
 
