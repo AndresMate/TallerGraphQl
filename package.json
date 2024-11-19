@@ -7,10 +7,10 @@
     "start": "node index"
   },
   "private": true,
-  "keywords": [],
+  "keywords": ["graphql", "apollo", "mongoose"],
   "author": "Andres Mateus && Jhon Jaime",
   "license": "ISC",
-  "description": "",
+  "description": "A GraphQL project using Apollo Server and Mongoose",
   "type": "module",
   "dependencies": {
     "@apollo/server": "^4.11.2",
